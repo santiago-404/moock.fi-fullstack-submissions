@@ -95,7 +95,7 @@ app.post('/api/phonebook', (req, res) => {
 })
 
 app.delete('/api/phonebook/:id', (req, res) => {
-  const id = req.params.id;
+  const id = Number(req.params.id);
   const findEntry = phonebook.find(p => p.id === id);
 
   if(findEntry === undefined){

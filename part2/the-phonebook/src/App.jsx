@@ -15,16 +15,11 @@ const App = () => {
   const [notification, setNotification] = useState({
     show: false,
     message: ''
-  });
-
-  console.log(persons);
-  
+  });  
 
   useEffect(() => {
     const fetchData = async () => {
       const response = await getAll();
-      console.log(persons);
-      
   
       setPersons(response);
     }
