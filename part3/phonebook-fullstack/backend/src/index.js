@@ -1,6 +1,5 @@
 import express from "express";
 import morgan from "morgan";
-import cors from 'cors';
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -35,8 +34,6 @@ let phonebook = [
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '../dist')))
-
-app.use(cors());  
 
 morgan.token('body', (req, res) => {
   if (req.method === 'POST') {
