@@ -1,5 +1,4 @@
 import {useState, useEffect} from 'react'
-import axios from 'axios';
 import { getAll, postEntry, deleteEntry, patchEntry} from './services/requests';
 import Persons from './components/PersonsList';
 import Filter from './components/SearchFilter';
@@ -13,7 +12,7 @@ const App = () => {
   const [newNum, setNewNum] = useState('');
   const [filter, setFilter] = useState('');
   const [notification, setNotification] = useState({
-    show: false,
+    sucess: false,
     message: ''
   });  
 
@@ -30,13 +29,30 @@ const App = () => {
   const handleNumChange = event => setNewNum(event.target.value);
   const handleFilter = event => setFilter(event.target.value);
 
+  const handlerNotification = (successParam, messageParam) => {
+    setNotification({
+      success: successParam,
+      message: messageParam
+    });
+
+    
+    setTimeout(() => setNotification({
+      success: false,
+      message: ''
+    }), 3000);
+
+    
+    setNewName('');
+    setNewNum('');
+  }
+
   const handleDelete = (id) => {
     return async () => {
       const person = persons.find(p => p.id === id);
       const userAnswer = window.confirm(`Delete ${person.name} ?`)
       if(userAnswer){
         try {
-          const result = await deleteEntry(id);
+          await deleteEntry(id);
           const newList = persons.filter(person => person.id !== id);
           setPersons(newList);
         } catch (error) {
@@ -58,30 +74,22 @@ const App = () => {
     event.preventDefault();
     const result = persons.find(person => person.name === newName || person.number === newNum);
 
-    if(result){
-      const userAnswer = window.confirm(`${newName}'s name/number is already added to phonebook, replace the old number with the new one?`);
-      if(userAnswer){
-        const response = await patchEntry(result.id, {number: newNum});
-        setPersons(persons.map(p => p.id === result.id ? response : p));
+    try {
+      if(result){
+        const userAnswer = window.confirm(`${newName}'s name/number is already added to phonebook, replace the old number with the new one?`);
+        if(userAnswer){
+          const response = await patchEntry(result.id, {number: newNum});
+          setPersons(persons.map(p => p.id === result.id ? response : p));
+        }
+      }else{
+        const newEntry = await postEntry({name: newName, number: newNum});
+        setPersons(persons.concat(newEntry));
       }
-    }else{
-      const newEntry = await postEntry({name: newName, number: newNum});
-      setPersons(persons.concat(newEntry));
+
+      handlerNotification(true, `${newName} is added to the phonebook`);
+    } catch (error) {
+      handlerNotification(false, error.response.data.error.message);
     }
-
-    setNotification({
-      success: true,
-      message: `${newName} is added to the phonebook`
-    });
-
-    
-    setTimeout(() => setNotification({
-      success: false,
-      message: ''
-    }), 3000);
-
-    setNewName('');
-    setNewNum('');
   }
 
   const list = filter === ''
